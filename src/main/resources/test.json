@@ -1,0 +1,12 @@
+[
+  {
+    "sql":"delete * from table_name",
+    "type": ["int"],
+    "data": [["1"]]
+  },
+  {
+    "sql":"insert tableName(id, name, value) value(?,?,?)",
+    "type": ["string", "string", "int"],
+    "data": [["a","b", "1"], ["c", "v", "2.2"], ["c", "v", 2.22221222], ["c", "v", 2.233222e-10], ["c", "v", 0], ["c", "v"]]
+  }
+]
