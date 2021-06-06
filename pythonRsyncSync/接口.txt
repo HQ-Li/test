@@ -1,0 +1,76 @@
+获取同步数据接口：
+request
+{
+	"curLocal":"dgg1",
+	"curAccount":"pub_foundryhq",
+	"token":"aaa"
+}
+
+getSyncData(request)
+
+response:
+{
+    "code":200,
+	"count":2,
+	"msg":"sss"
+	"data":[
+		{
+			"srcHost":"dggcots03-hs",
+			"syncPath":"/foundry/a/b/c/add",
+			"fileType":"directory",
+			"syncAction":"add",
+			"id":123
+		},
+		{
+			"srcHost":"dggcots03-hs",
+			"syncPath":"/foundry/a/b/c/update",
+			"fileType":"directory",
+			"syncAction":"update",
+			"id":456
+		},
+		{
+			"srcHost":"dggcots03-hs",
+			"syncPath":"/foundry/a/b/c/delete",
+			"fileType":"directory",
+			"syncAction":"delete",
+			"id":789
+		}
+	]
+}
+
+//启动线程池
+
+//路径去除多余的斜杠
+//调用rsyn 同步数据
+// 
+
+syncAction
+新增或者更新
+rsync -az --mkdir  $srcHost:$syncPath $syncPath
+
+删除数据：
+rm -rf $syncPath
+
+//调用接口,报告数据状态
+//状态报告可能会失败，收集错误信息， 定时报告数据，次数
+
+request
+{
+	"data":[
+		{
+			"id":123,
+			"token":"aa",
+			"msg":"sync success. /foundry/a/b/c/",
+			"syncState":"success"
+		},
+		{
+		}
+	]
+}
+
+updateSyncDataState(request)
+
+//同步超时机制
+//失败重试
+
+                      
