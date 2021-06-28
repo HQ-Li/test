@@ -22,28 +22,28 @@ class SyncDataManager:
                 "msg":"sss",
                 "data":[
                     {
-                        "srcHost":"192.168.56.1",
-                        "syncPath":"/foundry/a/b/c/add",
+                        "srcHost":"192.168.40.132",
+                        "syncPath":"/local/hqli/pythonRsyncSync",
                         "fileType":"directory",
                         "syncAction":"add",
                         "id":123
                     },
                     {
-                        "srcHost":"192.168.56.1",
-                        "syncPath":"/foundry/a/b/c/update",
-                        "fileType":"directory",
-                        "syncAction":"update",
+                        "srcHost":"192.168.40.132",
+                        "syncPath":"/local/hqli/sync_file",
+                        "fileType":"file",
+                        "syncAction":"modify",
                         "id":456
                     },
                     {
-                        "srcHost":"dggcots03-hs",
-                        "syncPath":"/foundry/a/b/c/delete",
+                        "srcHost":"192.168.206.169",
+                        "syncPath":"/local/hqli/delete_file",
                         "fileType":"directory",
                         "syncAction":"delete",
                         "id":789
                     },
                     {
-                        "srcHost":"dggcots03-hs",
+                        "srcHost":"192.168.206.169",
                         "syncPath":"/foundry/a/b/c/update",
                         "fileType":"directory",
                         "syncAction":"update",
@@ -111,11 +111,12 @@ class SyncDataManager:
 
             # 线程等待完成
             for future in as_completed(taskList):
-                retData = future.result()
-                logger.info(future.done())
-                logger.info(retData)
-
-                self.updateSyncDataState(retData)
+            # for future in taskList:
+                if future.done():
+                    retData = future.result()
+                    logger.info(future.done())
+                    logger.info("sync end: path:" + retData.get("syncPath"))
+                    self.updateSyncDataState(retData)
 
         return True
 

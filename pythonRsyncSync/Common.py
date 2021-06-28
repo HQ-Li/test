@@ -23,8 +23,8 @@ class Common:
         self.SyncTypeList = [self.SyncTypeFile, self.SyncTypeDirectory, self.SyncTypeLink]
 
         # timer sync
-        self.TimerSyncInterval = 1 * 60  # 秒
-        self.TimerReportInterval = 1 * 60  # 心跳
+        self.TimerSyncInterval = 1 * 10  # 秒
+        self.TimerReportInterval = 1 * 10  # 心跳
 
 
 
@@ -49,7 +49,7 @@ class Common:
 
     def checkHostLogin(self,host):
         # 检查主机是否可以免密登录
-        cmd = 'ssh %s  -o PreferredAuthentications=publickey  -o StrictHostKeyChecking=no  date' % host
+        cmd = 'ssh %s -o StrictHostKeyChecking=no  date' % host
         stat, out = subprocess.getstatusoutput(cmd)
         ret = False
         if stat == 0:

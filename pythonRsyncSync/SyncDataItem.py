@@ -14,11 +14,11 @@ class SyncDataItem():
 
     def __init__(self, syncDataDict):
         self.syncDataInfo = syncDataDict
-        logger.info(self.syncDataInfo)
+        logger.info("syspath: " + self.syncDataInfo.get("syncPath",""))
         pass
 
     def run(self):
-        time.sleep(10)
+        # time.sleep(10)
 
         syncInfo = self.syncDataInfo
 
@@ -32,11 +32,12 @@ class SyncDataItem():
         else:
             try:
                 host = syncInfo["srcHost"]
-                ret, msg = goConfig.checkHostLogin(host)
-                if not ret:
-                    syncInfo["syncState"] = goConfig.SyncStateFailed
-                    syncInfo["msg"] = msg
-                    return syncInfo
+                # TODO: 检查是否可以免密登录
+                # ret, msg = goConfig.checkHostLogin(host)
+                # if not ret:
+                #     syncInfo["syncState"] = goConfig.SyncStateFailed
+                #     syncInfo["msg"] = msg
+                #     return syncInfo
 
                 # 调用命令 添加、删除、修改
                 action = syncInfo["syncAction"]
@@ -76,11 +77,11 @@ class SyncDataItem():
         # 调用rsyn 同步数据， 路径不存在自动创建
         fileType = syncInfo.get("fileType")
 
-        parentPath = ''
-        if fileType == goConfig.SyncTypeFile or fileType == goConfig.SyncTypeLink:
-            parentPath = os.path.dirname(path)
-        else:
-            parentPath = path
+        parentPath = os.path.dirname(path)
+        # if fileType == goConfig.SyncTypeFile or fileType == goConfig.SyncTypeLink:
+        #     parentPath = os.path.dirname(path)
+        # else:
+        #     parentPath = path
 
         mode = 0o755
         group = ''
@@ -91,6 +92,7 @@ class SyncDataItem():
             joinPath = '/'
             for pathLevel in pathspilt:
                 joinPath = '%s/%s'.format(joinPath, pathLevel)
+                logger.info("jonPath:" + joinPath)
                 if os.path.exists(parentPath):
                     os.mkdir(joinPath)
 
@@ -99,10 +101,15 @@ class SyncDataItem():
                         os.system("/bin/chgrp %s %s" % (group, joinPath))
 
         srcPath = '%s:%s' % (host, path)
-        destPath = '%s' % path
+        destPath = '%s' % parentPath  # 同步到父路径上面
+
+        # # 查看目标路径是否存在,可能之前已经同步过了
+        # if os.path.exists(destPath):
+        #     #目标路径是 它的上一层
+        #     destPath = os.path.dirname(destPath)
 
         # cmd = ["rsync", '-a', srcPath, destPath]
-        cmd = "rsync -a '%s' '%s' " % (srcPath, destPath)
+        cmd = "rsync -av '%s' '%s' " % (srcPath, destPath)
         logger.info(cmd)
         # 查看 rysnc 退出状态
         stat, out = subprocess.getstatusoutput(cmd)
@@ -115,10 +122,33 @@ class SyncDataItem():
 
 
     def deleteData(self, syncInfo):
-        ret = False
-        msg = ''
+        path = syncInfo['syncPath']
+        # 去除路径多余的斜杠
+        path = os.path.normpath(path)
+        if len(path) < 12:
+            return False, "path[%s] is too short unable delete" % path
 
-        return ret, msg
+        if os.path.exists(path):
+            parentPath = os.path.dirname(path)
+            tmpPath = parentPath + "/.tmp/"
+            #os.mkdir(tmpPath)
+
+            os.renames(path, tmpPath)
+            logger.info("mv %s %s", path, tmpPath)
+
+            cmd = "rm -rf %s " % tmpPath
+            logger.info(cmd)
+            # 查看 rysnc 退出状态
+            stat, out = subprocess.getstatusoutput(cmd)
+            ret = False
+            if stat == 0:
+                # success
+                ret = True
+        else:
+            ret = True
+            out = "file or directory not exists: %s" % path
+
+        return ret, out
 
 
     def checkParam(self, syncInfo):
